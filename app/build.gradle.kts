@@ -4,18 +4,18 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.dagger.hilt.android)
     id("com.google.devtools.ksp")
-
+    id("kotlin-parcelize")
 
 }
 
 
 
 android {
-    namespace = "com.example.template_project"
+    namespace = "com.example.musicapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.template_project"
+        applicationId = "com.example.musicapp"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -85,4 +85,24 @@ dependencies {
     // ViewModel + Navigation Compose
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
+
+    //Splash Api
+    implementation ("androidx.core:core-splashscreen:1.0.1")
+
+    //Exo Player
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    implementation("androidx.media3:media3-ui:1.3.1")
+    implementation("androidx.media3:media3-session:1.3.1")
+
+    //Google Fonts
+    implementation(libs.androidx.ui.text.google.fonts)
+
+    implementation ("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
+
+
+    //Paging
+    implementation ("androidx.paging:paging-runtime:3.2.1")
+    implementation ("androidx.paging:paging-compose:3.2.1")
+    implementation ("androidx.room:room-paging:2.6.1")
 }
