@@ -10,7 +10,14 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -27,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.musicapp.ui.theme.Template_projectTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,6 +44,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.navigation.compose.rememberNavController
 import com.example.musicapp.player.MusicService
+import com.example.musicapp.presentation.common.QueueList
 import com.example.musicapp.presentation.player.MusicBar
 import com.example.musicapp.presentation.navgraph.NavGraph
 import com.example.musicapp.presentation.navgraph.Route
@@ -72,6 +81,9 @@ fun MainApp(viewModel: MainViewModel) {
     val playerState by viewModel.playerManager.state.collectAsState()
     var isSheetOpen by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var isQueueOpen by remember { mutableStateOf(false) }
+    val queueState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val statusProvider: (String) -> SongStatus = remember(playerState) {
         { songId ->
             viewModel.songStatus(songId)
@@ -116,6 +128,21 @@ fun MainApp(viewModel: MainViewModel) {
 
 
         }
+
+    if (isQueueOpen) {
+        ModalBottomSheet(
+            onDismissRequest = { isQueueOpen = false },
+            sheetState = queueState,
+            containerColor = Background,
+            dragHandle = null,
+        ) {
+            Box(modifier = Modifier.fillMaxWidth().heightIn(max=500.dp).padding(horizontal = 6.dp, vertical = 20.dp)) {
+                QueueList(
+                    onSongClick = viewModel::onSongClick,
+                    songs = viewModel.getPlaylist()
+                )
+            }
+        }
     }
     if (isSheetOpen) {
         ModalBottomSheet(
@@ -133,12 +160,15 @@ fun MainApp(viewModel: MainViewModel) {
                 onArtistClick = {artistId ->
                     scope.launch {
                         isSheetOpen = false
-                        val artist = viewModel.getArtist(artistId)
-                        navController.currentBackStackEntry?.savedStateHandle?.set("artist", artist)
-                        navController.navigate(route = Route.ArtistDetailsScreen.route)
+                        navController.navigate(route = Route.ArtistDetailsScreen.createRoute(artistId.toInt()))
                     }
+                },
+                onQueueOpen = {
+                    isSheetOpen = false
+                    isQueueOpen = true
                 }
             )
         }
+    }
     }
 }

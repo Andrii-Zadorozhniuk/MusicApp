@@ -2,6 +2,7 @@ package com.example.musicapp.presentation.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.musicapp.domain.exception.AppException
 import com.example.musicapp.domain.model.Artist
 import com.example.musicapp.domain.model.Song
 import com.example.musicapp.domain.usecases.LocalUseCases
@@ -24,7 +25,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
+import com.example.musicapp.domain.exception.Result
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val songUseCases: SongUseCases,
@@ -57,44 +58,46 @@ class SearchViewModel @Inject constructor(
     private fun searchFlow(query: String, filter: SearchFilter): Flow<SearchUiState> = flow {
         emit(SearchUiState(isLoading = true, errorMessage = null))
 
-        try {
-            val artists: List<Artist>
-            val songs: List<Song>
+        val artistsResult = if (filter != SearchFilter.Tracks) {
+            songUseCases.searchArtists(query)
+        } else Result.Success(emptyList())
 
-            coroutineScope {
-                val artistsDeferred = if (filter != SearchFilter.Tracks) {
-                    async { songUseCases.searchArtists(query) }
-                } else null
+        val songsResult = if (filter != SearchFilter.Artists) {
+            songUseCases.searchSongs(query)
+        } else Result.Success(emptyList())
 
-                val songsDeferred = if (filter != SearchFilter.Artists) {
-                    async { songUseCases.searchSongs(query) }
-                } else null
+        val error = (artistsResult as? Result.Error)?.exception
+            ?: (songsResult as? Result.Error)?.exception
 
-                artists = artistsDeferred?.await() ?: emptyList()
-                songs = songsDeferred?.await() ?: emptyList()
-            }
-
-            val items = buildList {
-                val artistItems = artists.map { SearchUiItem.ArtistItem(it) }
-                val songItems = songs.map { SearchUiItem.SongItem(it) }
-                val maxSize = maxOf(artistItems.size, songItems.size)
-                for (i in 0 until maxSize) {
-                    if (i < songItems.size) add(songItems[i])
-                    if (i < artistItems.size) add(artistItems[i])
+        if (error != null) {
+            emit(SearchUiState(
+                isLoading = false,
+                errorMessage = when (error) {
+                    is AppException.NoInternet -> "No internet connection"
+                    is AppException.ServerError -> "Server error, try later"
+                    is AppException.HttpError -> "Error ${error.code}"
+                    else -> "Something went wrong"
                 }
-            }
-
-            emit(SearchUiState(
-                isLoading = false,
-                items = items
             ))
-
-        } catch (e: Exception) {
-            emit(SearchUiState(
-                isLoading = false,
-                errorMessage = e.localizedMessage
-            ))
+            return@flow
         }
+        val artists = (artistsResult as Result.Success).data
+        val songs = (songsResult as Result.Success).data
+        val items = buildList {
+            val artistItems = artists.map { SearchUiItem.ArtistItem(it) }
+            val songItems = songs.map { SearchUiItem.SongItem(it) }
+            val maxSize = maxOf(artistItems.size, songItems.size)
+            for (i in 0 until maxSize) {
+                 if (i < songItems.size) add(songItems[i])
+                 if (i < artistItems.size) add(artistItems[i])
+            }
+        }
+
+        emit(SearchUiState(
+           isLoading = false,
+           items = items
+        ))
+        return@flow
     }
 
     fun onQueryChanged(newQuery: String) {

@@ -3,6 +3,7 @@ package com.example.musicapp.presentation.navgraph
 import android.util.Log
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -51,7 +52,7 @@ fun NavGraph(
                 newTrendingSongs = newTrendingSongs,
                 recommendedSongs = recommendedSongs,
                 onSongClick = {list, index -> onSongClick(list, index)},
-                onArtistClick = {navigateToArtistDetails(navController, it)},
+                onArtistClick = {navigateToArtistDetails(navController, it.toInt())},
                 recentHistory = recentHistory
             )
         }
@@ -74,7 +75,7 @@ fun NavGraph(
                               },
                 onArtistClick = {
                     viewModel.addArtistToSearchHistory(it)
-                    navigateToArtistDetails(navController, it)
+                    navigateToArtistDetails(navController, it.id.toInt())
                                 },
                 onChangeFilter = viewModel::onFilterChanged,
                 onLike = onLike,
@@ -93,7 +94,7 @@ fun NavGraph(
                 likedSongs = likedSongs,
                 libraryHistory = libraryHistory,
                 onSongClick = {list, index -> onSongClick(list, index)},
-                onArtistClick = {navigateToArtistDetails(navController, it)},
+                onArtistClick = {navigateToArtistDetails(navController, it.toInt())},
                 onLike = onLike,
                 onUnlike = onUnlike,
                 isLiked = isLiked,
@@ -101,20 +102,22 @@ fun NavGraph(
                 goToSearch = {navController.navigate(route = Route.SearchScreen.route)}
             )
         }
-        composable(route = Route.ArtistDetailsScreen.route) {
+        composable(route = Route.ArtistDetailsScreen.route) { backStackEntry ->
             val viewModel: ArtistDetailsViewModel = hiltViewModel()
             val state = viewModel.state.collectAsState().value
-            navController.previousBackStackEntry?.savedStateHandle?.get<Artist>("artist")?.let { artist ->
-                viewModel.addArtistToHistory(artist)
-                ArtistDetailsScreen(
-                    onLoad = {viewModel.load(artist.id.toString())},
+            val artistId = backStackEntry.arguments?.getString("artistId")
+            LaunchedEffect(artistId) {
+                if (artistId != null) {
+                    viewModel.load(artistId.toString())
+                }
+            }
+            ArtistDetailsScreen(
                     state = state,
-                    artist = artist,
                     onBack = {navController.popBackStack()},
                     onSongClick = {list, index -> onSongClick(list, index)},
                     onAlbumClick = {navigateToAlbum(navController,it)}
                 )
-            }
+
         }
         composable(route = Route.AlbumScreen.route) {
             val viewModel: AlbumViewModel = hiltViewModel()
@@ -136,9 +139,10 @@ fun NavGraph(
 }
 
 
-private fun navigateToArtistDetails(navController: NavController, artist: Artist) {
-    navController.currentBackStackEntry?.savedStateHandle?.set("artist", artist)
-    navController.navigate(route = Route.ArtistDetailsScreen.route)
+
+
+private fun navigateToArtistDetails(navController: NavController, artistId: Int) {
+    navController.navigate(route = Route.ArtistDetailsScreen.createRoute(artistId))
 }
 private fun navigateToAlbum(navController: NavController, album: Album) {
     navController.currentBackStackEntry?.savedStateHandle?.set("album", album)

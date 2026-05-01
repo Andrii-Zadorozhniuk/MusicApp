@@ -41,7 +41,6 @@ fun SongItem(
     modifier: Modifier = Modifier,
     song: Song,
     onClick: () -> Unit,
-    isBiggerIcon: Boolean = false,
     hideImage: Boolean = false
 ) {
     val context = LocalContext.current
@@ -53,7 +52,7 @@ fun SongItem(
         if(!hideImage) {
             AsyncImage(
                 modifier = Modifier
-                    .size(if (isBiggerIcon) 65.dp else HorizontalImageSize),
+                    .size(HorizontalImageSize),
                 contentScale = ContentScale.Crop,
                 model = ImageRequest.Builder(context)
                     .data(song.image)

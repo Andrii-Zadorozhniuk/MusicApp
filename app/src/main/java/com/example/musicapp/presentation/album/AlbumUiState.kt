@@ -8,5 +8,5 @@ sealed interface AlbumUiState {
         val albumTracks: List<Song>,
     ) : AlbumUiState
     data object Loading: AlbumUiState
-    data object Error: AlbumUiState
+    data class Error(val error: String): AlbumUiState
 }

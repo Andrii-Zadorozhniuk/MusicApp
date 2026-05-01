@@ -13,9 +13,12 @@ import com.example.musicapp.ui.theme.Green
 import com.example.musicapp.ui.theme.UnselectedColor
 
 @Composable
-fun ErrorScreen(onRetry: () -> Unit = {}) {
+fun ErrorScreen(
+    text: String = "Check your internet connection.",
+    onRetry: () -> Unit = {}
+) {
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Text(text = "Check your internet connection.")
+        Text(text = text)
         Button(onClick = {onRetry()}, colors = ButtonDefaults.buttonColors(containerColor = UnselectedColor)) {
             Text("Retry")
         }

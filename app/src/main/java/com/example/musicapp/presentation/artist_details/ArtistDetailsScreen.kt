@@ -58,15 +58,11 @@ import com.example.musicapp.ui.theme.TextColor
 
 @Composable
 fun ArtistDetailsScreen(
-    onLoad: () -> Unit,
     state: ArtistDetailsUiState,
     onBack: () -> Unit,
     onSongClick: (List<Song>, index: Int) -> Unit,
-    onAlbumClick: (Album) -> Unit,
-    artist: Artist) {
-    LaunchedEffect(Unit) {
-        onLoad()
-    }
+    onAlbumClick: (Album) -> Unit) {
+    val artist = (state as? ArtistDetailsUiState.Success)?.artist
     val maxHeaderHeight = 330.dp
     val minHeaderHeight = 80.dp
 
@@ -92,6 +88,7 @@ fun ArtistDetailsScreen(
                is ArtistDetailsUiState.Success -> {
                    val topSongs = state.artistTopSongs
                    val albums = state.artistAlbums
+                   val artist = state.artist
                    details(
                        artist =artist,
                        topSongs = topSongs,
@@ -111,8 +108,8 @@ fun ArtistDetailsScreen(
             maxHeight = maxHeaderHeight,
             minHeight = minHeaderHeight,
             onBackClick = {onBack()},
-            imageUrl = artist.image,
-            title = artist.name
+            imageUrl = artist?.image ?: "",
+            title = artist?.name ?: ""
         )
     }
 

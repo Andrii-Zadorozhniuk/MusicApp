@@ -48,7 +48,7 @@ fun HomeScreen(
     recommendedSongs: LazyPagingItems<Song>,
     allTrendingSongs: LazyPagingItems<Song>,
     onSongClick: (List<Song>, index: Int) -> Unit,
-    onArtistClick: (artist: Artist) -> Unit,
+    onArtistClick: (artistId: String) -> Unit,
 ) {
 
     val isLoading = allTrendingSongs.itemCount == 0 ||
@@ -85,7 +85,7 @@ fun LoadedHomeScreen(
     recommendedSongs: LazyPagingItems<Song>,
     allTrendingSongs: LazyPagingItems<Song>,
     onSongClick: (List<Song>, index: Int) -> Unit,
-    onArtistClick: (artist: Artist) -> Unit
+    onArtistClick: (artistId: String) -> Unit
 ) {
     val selectedCategory = remember { mutableStateOf("All") }
 
@@ -135,7 +135,7 @@ fun LoadedHomeScreen(
 fun RecentHistory(
     recentHistory: List<HistoryItem>,
     onSongClick: (List<Song>, index: Int) -> Unit,
-    onArtistClick: (artist: Artist) -> Unit
+    onArtistClick: (artistId: String) -> Unit
 ) {
     val rows = ceil(recentHistory.size / 2f).toInt()
     val itemHeight = 48.dp
@@ -153,7 +153,7 @@ fun RecentHistory(
                 is HistoryItem.ArtistItem -> {
                     HistoryArtistItem(
                         artist = item.artist,
-                        onClick = {onArtistClick(item.artist)}
+                        onClick = {onArtistClick(item.artist.id)}
                     )
                 }
                 is HistoryItem.SongItem -> {
@@ -172,16 +172,19 @@ fun LazyListScope.horizontalSection(
     songs: LazyPagingItems<Song>,
     onSongClick: (List<Song>, Int) -> Unit
 ) {
+    val all = (0 until songs.itemCount).mapNotNull {songs[it]}
     item {
         SectionTitle(title)
         LazyRow(
         ) {
-            items(songs.itemCount) { index ->
+            items(
+                count = songs.itemCount,
+                key = { index -> songs.peek(index)?.id ?: index }
+            ) { index ->
                 songs[index]?.let { song ->
                     SongItemVertical(
                         song = song,
                         onClick = {
-                            val all = (0 until songs.itemCount).mapNotNull {songs[it]}
                             onSongClick(all, index)
                         }
                     )
@@ -202,16 +205,20 @@ fun LazyListScope.verticalSection(
     songs: LazyPagingItems<Song>,
     onSongClick: (List<Song>, Int) -> Unit
 ) {
+    val all = (0 until songs.itemCount).mapNotNull {songs[it]}
     item {
         SectionTitle(title)
         Spacer(modifier = Modifier.height(5.dp))
     }
-    items(songs.itemCount) { index ->
+    items(
+        count = songs.itemCount,
+        key = { index -> songs.peek(index)?.id ?: index }
+    ) { index ->
         songs[index]?.let { song ->
             SongItem(
                 song = song,
                 onClick = {
-                    val all = (0 until songs.itemCount).mapNotNull {songs[it]}
+
                     onSongClick(all, index)
                 }
             )

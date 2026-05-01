@@ -158,7 +158,10 @@ fun SearchScreen(
             )
             if (!state.isLoading && state.items.isEmpty() && state.errorMessage == null && query.isNotEmpty()) TextScreen("No results found.")
             if (state.errorMessage != null) {
-                ErrorScreen({onRetry()})
+                ErrorScreen(
+                    text = state.errorMessage,
+                    onRetry = {onRetry()}
+                )
             }
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(state.items) { index, item ->

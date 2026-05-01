@@ -16,6 +16,7 @@ import com.example.musicapp.data.local.mapper.SongMapper.toDomain
 import com.example.musicapp.data.local.mapper.SongMapper.toEntity
 import com.example.musicapp.data.paging.SongRemoteMediator
 import com.example.musicapp.data.remote.MusicApi
+import com.example.musicapp.data.remote.toAppException
 import com.example.musicapp.domain.model.Album
 import com.example.musicapp.domain.model.Artist
 import com.example.musicapp.domain.model.HistoryItem
@@ -25,6 +26,8 @@ import com.example.musicapp.domain.repository.MusicRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import com.example.musicapp.domain.exception.Result
+import com.example.musicapp.utils.safeApiCall
 
 class MusicRepositoryImpl(
     private val api: MusicApi,
@@ -55,29 +58,27 @@ class MusicRepositoryImpl(
 
 
 
-    override suspend fun searchSongs(query: String): List<Song> {
-        return api.searchSongs(query = query).results
-    }
+    override suspend fun searchSongs(query: String): Result<List<Song>> =
+        safeApiCall { api.searchSongs(query = query).results }
 
-    override suspend fun searchArtists(query: String): List<Artist> {
-        return api.searchArtists(query = query).results
-    }
+    override suspend fun searchArtists(query: String): Result<List<Artist>> =
+        safeApiCall { api.searchArtists(query = query).results }
 
-    override suspend fun getTopArtistTracks(artistId: String): List<Song> {
-        return api.getTopArtistTracks(artistId = artistId).results
-    }
 
-    override suspend fun getArtistAlbums(artistId: String): List<Album> {
-        return api.getArtistAlbums(artistId = artistId).results
-    }
+    override suspend fun getTopArtistTracks(artistId: String): Result<List<Song>> =
+        safeApiCall { api.getTopArtistTracks(artistId = artistId).results }
 
-    override suspend fun getTracksFromAlbum(albumId: String): List<Song> {
-        return api.getTracksFromAlbum(albumId = albumId).results
-    }
+    override suspend fun getArtistAlbums(artistId: String): Result<List<Album>> =
+        safeApiCall { api.getArtistAlbums(artistId = artistId).results }
 
-    override suspend fun getArtist(artistId: String): Artist {
-        return api.getArtist(artistId = artistId).results.first()
-    }
+
+    override suspend fun getTracksFromAlbum(albumId: String): Result<List<Song>> =
+        safeApiCall { api.getTracksFromAlbum(albumId = albumId).results }
+
+
+    override suspend fun getArtist(artistId: String): Result<Artist> =
+        safeApiCall { api.getArtist(artistId = artistId).results.first() }
+
 
     override suspend fun likeSong(song: Song) {
         songDao.insert(song.toEntity(SongCategory.LIKED))

@@ -23,27 +23,7 @@ class HomeViewModel @Inject constructor(
     private val songUseCases: SongUseCases,
     private val localUseCases: LocalUseCases
 ): ViewModel() {
-//    private val _state = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-//    val state = _state
-//    init {
-//        load()
-//    }
-//
-//    private fun load() {
-//        viewModelScope.launch {
-//            try {
-//                _state.value = HomeUiState.Success(
-//                    newTrendingSongs = songUseCases.getAllTrendingSongs(),
-//                    allTrendingSongs = songUseCases.getNewTrendingSongs(),
-//                    recommendedSongs = songUseCases.getRecommendedSongs()
-//                )
-//            } catch (e: Exception) {
-//                _state.value = HomeUiState.Error
-//            }
-//
-//        }
-//    }
-//
+
     val trendingSongs: Flow<PagingData<Song>> = songUseCases.getAllTrendingSongs()
         .cachedIn(viewModelScope)
 

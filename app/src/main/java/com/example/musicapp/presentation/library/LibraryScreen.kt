@@ -57,7 +57,7 @@ fun LibraryScreen(
     likedSongs: List<Song>,
     libraryHistory: List<HistoryItem>,
     onSongClick: (List<Song>, index: Int) -> Unit,
-    onArtistClick: (artist: Artist) -> Unit,
+    onArtistClick: (artistId: String) -> Unit,
     onLike: (Song) -> Unit,
     onUnlike: (String) -> Unit,
     isLiked: (String) -> Flow<Boolean>,
@@ -176,7 +176,7 @@ fun LibraryScreen(
                                 is HistoryItem.ArtistItem -> {
                                     ArtistItem(
                                         artist = item.artist,
-                                        onClick = { onArtistClick(item.artist) }
+                                        onClick = { onArtistClick(item.artist.id) }
                                     )
                                 }
                                 is HistoryItem.SongItem -> {

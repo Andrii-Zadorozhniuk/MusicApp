@@ -57,7 +57,6 @@ class SongRemoteMediator(
         }
 
         return try {
-            delay(5000)
             val response = api.getSongs(
                 order = order,
                 limit = state.config.pageSize,

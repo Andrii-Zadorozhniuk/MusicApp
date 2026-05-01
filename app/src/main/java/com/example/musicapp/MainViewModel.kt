@@ -19,14 +19,12 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     val playerManager: PlayerManager,
-    private val useCases: SongUseCases,
     private val localUseCases: LocalUseCases,
     private val lastSongUseCases: LastSongUseCases
 ) : ViewModel() {
 
     init {
         viewModelScope.launch {
-
             lastSongUseCases.readLastSong().first()?.let { song ->
                 playerManager.updateCurrentSong(song)
             }
@@ -48,8 +46,9 @@ class MainViewModel @Inject constructor(
             else -> SongStatus.PAUSED
         }
     }
-    suspend fun getArtist(artistId: String): Artist {
-        return useCases.getArtist(artistId)
+
+    fun getPlaylist(): List<Song> {
+        return playerManager.state.value.playlist
     }
 
     fun likeSong(song: Song) {
